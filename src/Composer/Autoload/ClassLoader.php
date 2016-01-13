@@ -12,6 +12,8 @@
 
 namespace Composer\Autoload;
 
+use Composer\StreamWrapper\IncludeWrapperManager;
+
 /**
  * ClassLoader implements a PSR-0 class loader
  *
@@ -337,6 +339,8 @@ class ClassLoader
             // Remember that this class does not exist.
             return $this->classMap[$class] = false;
         }
+        
+        $file = $this->applyIncludeWrapper($file);
 
         return $file;
     }
@@ -399,6 +403,15 @@ class ClassLoader
         if ($this->useIncludePath && $file = stream_resolve_include_path($logicalPathPsr0)) {
             return $file;
         }
+    }
+    
+    private function applyIncludeWrapper($file)
+    {
+        if (IncludeWrapperManager::applies_to_file($file)) {
+            $file = IncludeWrapperManager::apply_to_file($file);
+        }
+        
+        return $file;
     }
 }
 
